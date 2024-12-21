@@ -1,0 +1,669 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Flood Tool &#8212; Flood Tool  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="flood-tool">
+<h1>Flood Tool<a class="headerlink" href="#flood-tool" title="Permalink to this heading">¶</a></h1>
+<p>This package implements a flood risk prediction and visualization tool.</p>
+<section id="installation-instructions">
+<h2>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this heading">¶</a></h2>
+<p>To use our model for predicting the flood risk for a specific postcode, first use git to clone the repository containing the material for the model.
+Navigate to/create a folder where you want to store the model. When in the desired location clients could run:</p>
+<p>git clone <a class="reference external" href="https://github.com/ese-msc-2022/ads-deluge-Trent.git">https://github.com/ese-msc-2022/ads-deluge-Trent.git</a></p>
+<p>This repository contains an environment.yml file for building the conda environment. Navigate into the repository (e.g. cd ads-deluge-Trent).
+Clients then run</p>
+<p>conda env create -f environment.yml
+conda activate deluge</p>
+<p>You should now see the environment name (deluge) displayed on the left hand side of the terminal, done!
+You have successfully accessed our model now!</p>
+</section>
+<section id="usage-guide">
+<h2>Usage guide<a class="headerlink" href="#usage-guide" title="Permalink to this heading">¶</a></h2>
+<p>Our model contains the following .py documents,</p>
+<dl>
+<dt>Risk Tool-</dt><dd><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<ul class="simple">
+<li><p>tool.py ()</p></li>
+<li><p>geo.py (Convertions. Converting between degrees and radians, between input latitude/longitude and
+Cartesian (x, y, z) coordinates, or between OSGB36 easting/northing and GPS latitude and longitude pairs)</p></li>
+<li><p>gridsearch.py</p></li>
+<li><p>live.py (gets the live station data from the website)</p></li>
+<li><p>transformer.py</p></li>
+</ul>
+</dd>
+<dt>Visualization-</dt><dd><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<ul class="simple">
+<li><p>analysis.py (plots the postcode density, risk map and heatmap)</p></li>
+<li><p>mapping.py (plots circles on the map)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="risk-tool">
+<h2>Risk tool<a class="headerlink" href="#risk-tool" title="Permalink to this heading">¶</a></h2>
+<p>Usage:
+tool = flood_tool.Tool()
+tool.train()
+tool.get_xxx_method()
+visualization</p>
+<p>Initialization - load data, preprocess by dropping duplicates and spliting into train and test sets, set default sub-models for different tasks.</p>
+<p>Model training - process data, train different models (do grid search, try different hyperparameters to find the best model).</p>
+<p>Make predictions -</p>
+<dl>
+<dt>“get_flood_class_from_postcodes_methods()” :</dt><dd><p>Gets and returns a dictionary of available flood probablity classification methods for respective postcodes.
+There are 3 classification methods in our model: Linear Regression, Decision Tree Regressor and Random Forest Regressor.
+This function is prepared for “get_flood_class_from_postcodes()”, which takes string “postcodes” and “methods” as inputs,
+generates series predicting flood probability classification for a collection of postcodes, and returns series of predicted flood risk classification labels indexed by postcodes.
+The function “get_flood_class_from_locations_methods()” does the same for Easting/Northing coordinates.</p>
+</dd>
+<dt>“get_house_price_methods()” :</dt><dd><p>Gets and returns a dictionary of available flood house price regression methods.</p>
+<p>“get_median_house_price_estimate” function takes string “postcodes” and “methods” as inputs, generates a series predicting median house prices
+for a collection of postcodes, and returns series of predicted median house prices indexed by postcodes.</p>
+</dd>
+<dt>“get_local_authority_methods()” :</dt><dd><p>Gets and returns a dictionary of available local authorithy classification methods.</p>
+<dl class="simple">
+<dt>“get_local_authority_estimate()” function then takes sequences of floats “eastings” and “northings”, and “method” as inputs, generates series predicting local authorities for a sequence</dt><dd><p>of OSGB36 locations, and returns series of predicted authorities indexed by postcodes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="data-visualization">
+<h2>Data Visualization<a class="headerlink" href="#data-visualization" title="Permalink to this heading">¶</a></h2>
+<p>In analysis.py:</p>
+<dl class="simple">
+<dt>“plot_risk_map()” :</dt><dd><p>Takes a data frame “risk_data” with columns “{‘easting’,’northing’,’risk’}” as input.</p>
+</dd>
+<dt>“plot_EN_map()” :</dt><dd><p>Takes float arrays “easting”, “northing” and “risk”, and a string “filename” as inputs, and returns a map.</p>
+</dd>
+<dt>“plot_84_map()” :</dt><dd><p>Takes float arrays “latitude”, “longitude” and “risk”, and a string “filename” as inputs, and returns a map.</p>
+</dd>
+</dl>
+<p>In mapping.py, the “plot_circle()” function takes floats “lat”, “lon”, “radius” and a folium.Map “map” as inputs, and returns a Folium map object.</p>
+</section>
+<section id="geodetic-transformations">
+<h2>Geodetic Transformations<a class="headerlink" href="#geodetic-transformations" title="Permalink to this heading">¶</a></h2>
+<p>For historical reasons, multiple coordinate systems exist in British mapping.
+The Ordnance Survey has been mapping the British Isles since the 18th Century
+and the last major retriangulation from 1936-1962 produced the Ordance Survey
+National Grid (or <strong>OSGB36</strong>), which defined latitude and longitude across the
+island of Great Britain <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. For convenience, a standard Transverse Mercator
+projection <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> was also defined, producing a notionally flat gridded surface,
+with gradations called eastings and westings. The scale for these gradations
+was identified with metres.</p>
+<p>The OSGB36 datum is based on the Airy Ellipsoid of 1830, which defines
+semimajor axes for its model of the earth, <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span>, a scaling
+factor <span class="math notranslate nohighlight">\(F_0\)</span> and ellipsoid height, <span class="math notranslate nohighlight">\(H\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a &amp;= 6377563.396, \\
+b &amp;= 6356256.910, \\
+F_0 &amp;= 0.9996012717, \\
+H &amp;= 24.7.\end{split}\]</div>
+<p>The point of origin for the transverse Mercator projection is defined in the
+Ordnance Survey longitude-latitude and easting-northing coordinates as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\phi^{OS}_0 &amp;= 49^\circ \mbox{ north}, \\
+\lambda^{OS}_0 &amp;= 2^\circ \mbox{ west}, \\
+E^{OS}_0 &amp;= 400000 m, \\
+N^{OS}_0 &amp;= -100000 m.\end{split}\]</div>
+<p>More recently, the world has gravitated towards the use of Satellite based GPS
+equipment, which uses the (globally more appropriate) World Geodetic System
+1984 (or <strong>WGS84</strong>). This datum uses a different ellipsoid, which offers a
+better fit for a global coordinate system. Its key properties are:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a_{WGS} &amp;= 6378137,, \\
+b_{WGS} &amp;= 6356752.314, \\
+F_0 &amp;= 0.9996.\end{split}\]</div>
+<p>For a given point on the WGS84 ellipsoid, an approximate mapping to the
+OSGB36 datum can be found using a Helmert transformation <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>,</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{x}^{OS} = \mathbf{t}+\mathbf{M}\mathbf{x}^{WGS}.\]</div>
+<p>Here <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> denotes a coordinate in Cartesian space (i.e in 3D)
+as given by the (invertible) transformation</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\nu &amp;= \frac{aF_0}{\sqrt{1-e^2\sin^2(\phi^{OS})}} \\
+x &amp;= (\nu+H) \sin(\lambda)\cos(\phi) \\
+y &amp;= (\nu+H) \cos(\lambda)\cos(\phi) \\
+z &amp;= ((1-e^2)\nu+H)\sin(\phi)\end{split}\]</div>
+<p>and the transformation parameters are</p>
+<div class="math notranslate nohighlight">
+\begin{eqnarray*}
+\mathbf{t} &amp;= \left(\begin{array}{c}
+-446.448\\ 125.157\\ -542.060
+\end{array}\right),\\
+\mathbf{M} &amp;= \left[\begin{array}{ c c c }
+1+s&amp; -r_3&amp; r_2\\
+r_3 &amp; 1+s &amp; -r_1 \\
+-r_2 &amp; r_1 &amp; 1+s
+\end{array}\right], \\
+s &amp;= 20.4894\times 10^{-6}, \\
+\mathbf{r} &amp;= [0.1502'', 0.2470'', 0.8421''].
+\end{eqnarray*}</div><p>Given a latitude, <span class="math notranslate nohighlight">\(\phi^{OS}\)</span> and longitude, <span class="math notranslate nohighlight">\(\lambda^{OS}\)</span> in the
+OSGB36 datum, easting and northing coordinates, <span class="math notranslate nohighlight">\(E^{OS}\)</span> &amp; <span class="math notranslate nohighlight">\(N^{OS}\)</span>
+can then be calculated using the following formulae:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\rho &amp;= \frac{aF_0(1-e^2)}{\left(1-e^2\sin^2(\phi^{OS})\right)^{\frac{3}{2}}} \\
+\eta &amp;= \sqrt{\frac{\nu}{\rho}-1} \\
+M &amp;= bF_0\left[\left(1+n+\frac{5}{4}n^2+\frac{5}{4}n^3\right)(\phi^{OS}-\phi^{OS}_0)\right. \\
+&amp;\quad-\left(3n+3n^2+\frac{21}{8}n^3\right)\sin(\phi-\phi_0)\cos(\phi^{OS}+\phi^{OS}_0) \\
+&amp;\quad+\left(\frac{15}{8}n^2+\frac{15}{8}n^3\right)\sin(2(\phi^{OS}-\phi^{OS}_0))\cos(2(\phi^{OS}+\phi^{OS}_0)) \\
+&amp;\left.\quad-\frac{35}{24}n^3\sin(3(\phi-\phi_0))\cos(3(\phi^{OS}+\phi^{OS}_0))\right] \\
+I &amp;= M + N^{OS}_0 \\
+II &amp;= \frac{\nu}{2}\sin(\phi^{OS})\cos(\phi^{OS}) \\
+III &amp;= \frac{\nu}{24}\sin(\phi^{OS})cos^3(\phi^{OS})(5-\tan^2(phi^{OS})+9\eta^2) \\
+IIIA &amp;= \frac{\nu}{720}\sin(\phi^{OS})cos^5(\phi^{OS})(61-58\tan^2(\phi^{OS})+\tan^4(\phi^{OS})) \\
+IV &amp;= \nu\cos(\phi^{OS}) \\
+V &amp;= \frac{\nu}{6}\cos^3(\phi^{OS})\left(\frac{\nu}{\rho}-\tan^2(\phi^{OS})\right) \\
+VI &amp;= \frac{\nu}{120}\cos^5(\phi^{OS})(5-18\tan^2(\phi^{OS})+\tan^4(\phi^{OS}) \\
+&amp;\quad+14\eta^2-58\tan^2(\phi^{OS})\eta^2) \\
+E^{OS} &amp;= E^{OS}_0+IV(\lambda^{OS}-\lambda^{OS}_0)+V(\lambda-\lambda^{OS}_0)^3+VI(\lambda^{OS}-\lambda^{OS}_0)^5 \\
+N^{OS} &amp;= I + II(\lambda^{OS}-\lambda^{OS}_0)^2+III(\lambda-\lambda^{OS}_0)^4+IIIA(\lambda^{OS}-\lambda^{OS}_0)^6\end{split}\]</div>
+</section>
+<section id="module-flood_tool">
+<span id="function-apis"></span><h2>Function APIs<a class="headerlink" href="#module-flood_tool" title="Permalink to this heading">¶</a></h2>
+<p>Python flood risk analysis tool</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_tool.Tool">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_tool.</span></span><span class="sig-name descname"><span class="pre">Tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postcode_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['riskLabel',</span> <span class="pre">'medianPrice']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">household_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to interact with a postcode database file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>full_postcode_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of a .csv file containing geographic location
+data for postcodes.</p></li>
+<li><p><strong>household_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of a .csv file containing information on households
+by postcode.</p></li>
+<li><p><strong>sample_lables</strong> (<em>str</em><em>, </em><em>optional</em>) – string or an array of lables</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.apply_dictionary">
+<span class="sig-name descname"><span class="pre">apply_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.apply_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>y is the riskLabel
+risk_dictionary is the dictionary with risk classes and probabilities</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_annual_flood_risk">
+<span class="sig-name descname"><span class="pre">get_annual_flood_risk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postcodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_annual_flood_risk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a series of estimates of the total property values of a
+collection of postcodes.</p>
+<p>Risk is defined here as a damage coefficient multiplied by the
+value under threat multiplied by the probability of an event.</p>
+<p>new_tool.get_annual_flood_risk(risk_labels=True)
+:param postcodes: Sequence of postcodes.
+:type postcodes: sequence of strs
+:param risk_labels: Series containing flood risk classifiers, as</p>
+<blockquote>
+<div><p>predicted by get_flood_class_from_postcodes.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Series of total annual flood risk estimates indexed by locations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_default_methods">
+<span class="sig-name descname"><span class="pre">get_default_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_default_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to obtain defauld methods from outside of the class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>self.methods</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_easting_northing">
+<span class="sig-name descname"><span class="pre">get_easting_northing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postcodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_easting_northing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a frame of OS eastings and northings from a collection
+of input postcodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>postcodes</strong> (<em>sequence</em><em> of </em><em>strs</em>) – Sequence of postcodes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame containing only OSGB36 easthing and northing indexed
+by the input postcodes. Invalid postcodes (i.e. not in the
+input unlabelled postcodes file) return as NaN.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_flood_class_from_OSGB36_locations">
+<span class="sig-name descname"><span class="pre">get_flood_class_from_OSGB36_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eastings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">northings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_flood_class_from_OSGB36_locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate series predicting flood probability classification
+for a collection of OSGB36_locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eastings</strong> (<em>sequence</em><em> of </em><em>floats</em>) – Sequence of OSGB36 eastings.</p></li>
+<li><p><strong>northings</strong> (<em>sequence</em><em> of </em><em>floats</em>) – Sequence of OSGB36 northings.</p></li>
+<li><p><strong>method</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – optionally specify (via a value in
+self.get_flood_class_from_locations_methods) the classification
+method to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Series of flood risk classification labels indexed by locations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_flood_class_from_WGS84_locations">
+<span class="sig-name descname"><span class="pre">get_flood_class_from_WGS84_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">longitudes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latitudes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_flood_class_from_WGS84_locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate series predicting flood probability classification
+for a collection of WGS84 datum locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>longitudes</strong> (<em>sequence</em><em> of </em><em>floats</em>) – Sequence of WGS84 longitudes.</p></li>
+<li><p><strong>latitudes</strong> (<em>sequence</em><em> of </em><em>floats</em>) – Sequence of WGS84 latitudes.</p></li>
+<li><p><strong>method</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – optionally specify (via a value in
+self.get_flood_class_from_locations_methods) the classification
+method to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Series of flood risk classification labels indexed by locations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_flood_class_from_locations_methods">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_flood_class_from_locations_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_flood_class_from_locations_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a dictionary of available flood probablity classification methods
+for locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary mapping classification method names (which have</dt><dd><p>no inate meaning) on to an identifier to be passed to the
+get_flood_class_from_OSGB36_locations and
+get_flood_class_from_OSGB36_locations method.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_flood_class_from_postcodes">
+<span class="sig-name descname"><span class="pre">get_flood_class_from_postcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postcodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_flood_class_from_postcodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate series predicting flood probability classification
+for a collection of poscodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>postcodes</strong> (<em>sequence</em><em> of </em><em>strs</em>) – Sequence of postcodes.</p></li>
+<li><p><strong>method</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – optionally specify (via a value in
+get_flood_class_from_postcodes_methods) the classification
+method to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Series of flood risk classification labels indexed by postcodes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_flood_class_from_postcodes_methods">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_flood_class_from_postcodes_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_flood_class_from_postcodes_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a dictionary of available flood probablity classification methods
+for postcodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary mapping classification method names (which have</dt><dd><p>no inate meaning) on to an identifier to be passed to the
+get_flood_class_from_postcode method.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_house_price_methods">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_house_price_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_house_price_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a dictionary of available flood house price regression methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary mapping regression method names (which have</dt><dd><p>no inate meaning) on to an identifier to be passed to the
+get_median_house_price_estimate method.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_lat_long">
+<span class="sig-name descname"><span class="pre">get_lat_long</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postcodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_lat_long" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a frame containing GPS latitude and longitude information for a
+collection of of postcodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>postcodes</strong> (<em>sequence</em><em> of </em><em>strs</em>) – Sequence of postcodes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame containing only WGS84 latitude and longitude pairs for
+the input postcodes. Invalid postcodes (i.e. not in the
+input unlabelled postcodes file) return as NAN.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_local_authority_estimate">
+<span class="sig-name descname"><span class="pre">get_local_authority_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eastings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">northings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_local_authority_estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate series predicting local authorities for a sequence
+of OSGB36 locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eastingss</strong> (<em>sequence</em><em> of </em><em>floats</em>) – Sequence of OSGB36 eastings.</p></li>
+<li><p><strong>northings</strong> (<em>sequence</em><em> of </em><em>floats</em>) – Sequence of OSGB36 northings.</p></li>
+<li><p><strong>method</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – optionally specify (via a value in
+self.get_altitude_methods) the regression
+method to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Series of authorities indexed by eastings and northings.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_local_authority_methods">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_local_authority_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_local_authority_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a dictionary of available local authorithy classification methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary mapping regression method names (which have</dt><dd><p>no inate meaning) on to an identifier to be passed to the
+get_altitude_estimate method.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_median_house_price_estimate">
+<span class="sig-name descname"><span class="pre">get_median_house_price_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postcodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_median_house_price_estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate series predicting median house price for a collection
+of poscodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>postcodes</strong> (<em>sequence</em><em> of </em><em>strs</em>) – Sequence of postcodes.</p></li>
+<li><p><strong>method</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – optionally specify (via a value in
+self.get_house_price_methods) the regression
+method to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Series of median house price estimates indexed by postcodes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_postcodes_from_easting_northing">
+<span class="sig-name descname"><span class="pre">get_postcodes_from_easting_northing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eastings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">northings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_postcodes_from_easting_northing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select nearest postcode given OSGB36 coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coordinates</strong> (<em>dataframe with</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.get_total_value">
+<span class="sig-name descname"><span class="pre">get_total_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">postal_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.get_total_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a series of estimates of the total property values
+of a sequence of postcode units or postcode sectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>postal_data</strong> (<em>sequence</em><em> of </em><em>strs</em>) – Sequence of postcode units or postcodesectors</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Series of total property value estimates indexed by locations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_tool.Tool.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labelled_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tool.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the model using a labelled set of samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>labelled_samples</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of a .csv file containing a labelled set of samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_tool.Tr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_tool.</span></span><span class="sig-name descname"><span class="pre">Tr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.Tr" title="Permalink to this definition">¶</a></dt>
+<dd><p>test</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flood_tool.get_station_data_from_csv">
+<span class="sig-prename descclassname"><span class="pre">flood_tool.</span></span><span class="sig-name descname"><span class="pre">get_station_data_from_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_reference</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.get_station_data_from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return readings for a specified recording station from .csv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – filename to read</p></li>
+<li><p><strong>station_reference</strong> – station_reference to return.</p></li>
+<li><p><strong>get_station_data_from_csv</strong><strong>(</strong><strong>'resources/wet_day.csv'</strong><strong>)</strong> (<em>&gt;&gt;&gt; data =</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flood_tool.plot_circle">
+<span class="sig-prename descclassname"><span class="pre">flood_tool.</span></span><span class="sig-name descname"><span class="pre">plot_circle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.plot_circle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a circle on a map (creating a new folium map instance if necessary).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lat</strong> (<em>float</em>) – latitude of circle to plot (degrees)</p></li>
+<li><p><strong>lon</strong> (<em>float</em>) – longitude of circle to plot (degrees)</p></li>
+<li><p><strong>radius</strong> (<em>float</em>) – radius of circle to plot (m)</p></li>
+<li><p><strong>map</strong> (<em>folium.Map</em>) – existing map object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Folium map object</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">folium</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_circle</span><span class="p">(</span><span class="mf">52.79</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.95</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">,</span> <span class="nb">map</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flood_tool.plot_risk_map">
+<span class="sig-prename descclassname"><span class="pre">flood_tool.</span></span><span class="sig-name descname"><span class="pre">plot_risk_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">risk_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['easting',</span> <span class="pre">'northing']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_tool.plot_risk_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a risk map.</p>
+</dd></dl>
+
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>A guide to coordinate systems in Great Britain, Ordnance Survey</p>
+</aside>
+<aside class="footnote brackets" id="id5" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Map projections - A Working Manual, John P. Snyder, <a class="reference external" href="https://doi.org/10.3133/pp1395">https://doi.org/10.3133/pp1395</a></p>
+</aside>
+<aside class="footnote brackets" id="id6" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Computing Helmert transformations, G Watson, <a class="reference external" href="http://www.maths.dundee.ac.uk/gawatson/helmertrev.pdf">http://www.maths.dundee.ac.uk/gawatson/helmertrev.pdf</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Flood Tool</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
